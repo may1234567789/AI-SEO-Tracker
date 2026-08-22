@@ -13,7 +13,7 @@ export default function HowItWorks() {
 
             <div className="relative grid grid-cols-1 md:grid-cols-3 gap-8">
                 {/* Connecting Line (Desktop) */}
-                <div className="hidden md:block absolute top-[110px] left-[15%] right-[15%] h-px border-t border-dashed border-border pointer-events-none z-0"></div>
+                <div className="hidden md:block absolute top-25 left-[15%] right-[15%] h-px border-t border-dashed border-border pointer-events-none z-0"></div>
 
                 {homeHowItWorksData.map((step: any, i: number) => (
                     <div key={step.num} className="relative z-10 animate-slide-up" style={{ animationDelay: `${i * 100}ms` }}>
