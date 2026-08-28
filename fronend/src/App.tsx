@@ -1,24 +1,36 @@
-import Pricing from './components/Home/Pricing.tsx'
-import HowItWorks from './components/Home/HowItWork.tsx'
-import Footer from './components/Home/Footer.tsx'
-import Hero from './components/Home/Hero.tsx'
-import Navbar from './components/Navbar.tsx'
-import Features from './components/Home/Features.tsx'
+import { Routes, Route, useLocation } from "react-router-dom";
+import Navbar from "./components/Navbar";
+import ProtectedRoute from "./components/ProtectedRoute";
+import Home from "./pages/Home";
+import Login from "./pages/Login";
+import Dashboard from "./pages/Dashboard";
+import Analyze from "./pages/Analyze";
+import Report from "./pages/Report";
+import History from "./pages/History";
+import RankTracker from "./pages/RankTracker";
+import RankDetail from "./pages/RankDetail";
 
-function App() {
-  
+export default function App() {
+  const location = useLocation();
+
+  const hideNavbar = ["/login", "/register"].includes(location.pathname);
 
   return (
     <>
-      <Navbar />
-      <Hero />
-      <Features />
-      <HowItWorks />
-      <Pricing />
-      
-      <Footer />
+      {!hideNavbar && <Navbar />}
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/login" element={<Login state="login" />} />
+        <Route path="/register" element={<Login state="register" />} />
+        <Route element={<ProtectedRoute />}>
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/analyze" element={<Analyze />} />
+          <Route path="/report/:id" element={<Report />} />
+          <Route path="/history" element={<History />} />
+          <Route path="/rank-tracker" element={<RankTracker />} />
+          <Route path="/rank/:id" element={<RankDetail />} />
+        </Route>
+      </Routes>
     </>
-  )
+  );
 }
-
-export default App
