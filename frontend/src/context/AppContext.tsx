@@ -1,6 +1,6 @@
 import type { AxiosInstance } from "axios";
 import axios from "axios";
-import { createContext, useEffect, useState, type ReactNode } from "react";
+import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 
 interface User {
     id: string;
@@ -32,7 +32,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
     // Axios instance with auth header
     const api = axios.create({
-        baseURL: BACKEND_URL
+        baseURL: BACKEND_URL,
     })
 
     //Update axios header when token changes
