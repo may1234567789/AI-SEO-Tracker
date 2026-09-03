@@ -1,16 +1,18 @@
-import User from "../models/user";
+import User from "../models/user.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 
 //Generate JWT token
 const generateToken = (id) => {
-    return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: "30d" })
+    const jwtSecret = process.env.JWT_SECRET || process.env.JWT_SECERT;
+    if (!jwtSecret) throw new Error("JWT_SECRET is not configured");
+    return jwt.sign({ id }, jwtSecret, { expiresIn: "30d" })
 }
 
 export const register = async (req, res) => {
     try {
         const { name, email, password } = req.body;
-        if (!name, !email, !password) return res.status(400).json({ success: false, message: "All fields are required" });
+        if (!name || !email || !password) return res.status(400).json({ success: false, message: "All fields are required" });
 
         const existingUser = await User.findOne({ email })
         if (existingUser) return res.status(400).json({ success: false, message: "User already exist" });
@@ -25,7 +27,7 @@ export const register = async (req, res) => {
 
         return res.status(201).json({ success: true, token, user })
     } catch (e) {
-        console.log("Register error: ", error.message);
+        console.log("Register error: ", e.message);
         res.status(500).json({ success: false, message: "Server Error" })
     }
 }
@@ -51,7 +53,7 @@ export const login = async (req, res) => {
 
         return res.status(201).json({ success: true, token, user })
     } catch (e) {
-        console.log("Register error: ", error.message);
+        console.log("Login error: ", e.message);
         res.status(500).json({ success: false, message: "Server Error" })
     }
 }
@@ -65,7 +67,7 @@ export const getUser = async (req, res) => {
         }
         res.json({ success: true, user })
     } catch (e) {
-        console.log("Register error: ", error.message);
+        console.log("Get user error: ", e.message);
         res.status(500).json({ success: false, message: "Server Error" })
     }
 }

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { Mail, Lock, Loader2, ChartNoAxesColumnIcon, User2Icon } from "lucide-react";
 import { useApp } from "../context/AppContext";
 
@@ -10,6 +10,8 @@ export default function Login({ state }: { state: string }) {
     const [password, setPassword] = useState("");
     const [loading, setLoading] = useState(false);
     const { login, register } = useApp();
+    const [searchParams] = useSearchParams();
+    const navigate = useNavigate();
 
     const handleSubmit = async (e: React.SubmitEvent) => {
         e.preventDefault();
@@ -20,6 +22,12 @@ export default function Login({ state }: { state: string }) {
             result = await login(email, password);
         } else {
             result = await register(name, email, password);
+        }
+        if (result.success) {
+            const redirect = searchParams.get("redirect") || "/dashboard";
+            navigate(redirect);
+        } else {
+            window.alert(result.message || "An error occurred. Please try again.");
         }
         setLoading(false);
     };
