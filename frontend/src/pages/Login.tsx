@@ -1,16 +1,27 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Mail, Lock, Loader2, ChartNoAxesColumnIcon, User2Icon } from "lucide-react";
+import { useApp } from "../context/AppContext";
 
 export default function Login({ state }: { state: string }) {
     const [isLoginState, setIsLoginState] = useState(state === "login");
     const [name, setName] = useState("");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
-    const [loading] = useState(false);
+    const [loading, setLoading] = useState(false);
+    const { login, register } = useApp();
 
     const handleSubmit = async (e: React.SubmitEvent) => {
         e.preventDefault();
+        setLoading(true);
+
+        let result;
+        if (isLoginState) {
+            result = await login(email, password);
+        } else {
+            result = await register(name, email, password);
+        }
+        setLoading(false);
     };
 
     return (

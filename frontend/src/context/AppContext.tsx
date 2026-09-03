@@ -71,7 +71,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
             const res = await axios.post(`${BACKEND_URL}/api/auth/login`, { email, password })
             if (res.data.success) {
                 setToken(res.data.token)
-                setUser(res.data.token)
+                setUser(res.data.user)
                 localStorage.setItem("token", res.data.token)
                 return { success: true }
             }
@@ -103,14 +103,15 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
 
     const value = { user, token, loading, api, login, register, logout }
-    return
-    <AppContext.Provider value={value}>
-        {children}
-    </AppContext.Provider>
+    return (
+        <AppContext.Provider value={value}>
+            {children}
+        </AppContext.Provider>
+    );
 }
 
 export function useApp() {
     const context = useContext(AppContext)
-    if (!context) throw new Error("useApp must be used eithin AppProvider");
+    if (!context) throw new Error("useApp must be used within AppProvider");
     return context;
 }
