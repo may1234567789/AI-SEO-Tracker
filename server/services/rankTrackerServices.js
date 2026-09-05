@@ -4,7 +4,6 @@ import Browserbase from "@browserbasehq/sdk";
 const bb = new Browserbase({
     apiKey: process.env.BROWSERBASE_API_KEY,
 });
-
 // search google for a keyword and return the top results
 export async function rankTracker(keyword, targetDomain) {
     let browser;
@@ -39,7 +38,7 @@ export async function rankTracker(keyword, targetDomain) {
                 try {
                     await page.waitForSelector('h3', { timeout: 8000 });
                     await page.waitForTimeout(1500)
-                    pageResults = await page.evaluate(() => Array / from(document.querySelectorAll("h3")).map((h3) => {
+                    pageResults = await page.evaluate(() => Array.from(document.querySelectorAll("h3")).map((h3) => {
                         let a = h3.closest('a');
                         if (!a) {
                             let p = h3.parentElement;
@@ -74,13 +73,13 @@ export async function rankTracker(keyword, targetDomain) {
                     await page.reload({ waitUntil: "networkidle" });
                 }
             }
-            if (!pageResults) break;
+            if (pageResults.length === 0) break;
 
             // 5. Result Synthessis: Update global results and check for target match
             for (const r of pageResults) {
                 r.position = allResults.length + 1;
                 allResults.push(r);
-                if (!found && r.domain.toLowerCase().includes(cleanTarget) || cleanTarget.includes(r.domain.toLowerCase())) {
+                if (!found && (r.domain.toLowerCase().includes(cleanTarget) || cleanTarget.includes(r.domain.toLowerCase()))) {
                     found = { ...r, page: gpage + 1 };
                 }
             }
