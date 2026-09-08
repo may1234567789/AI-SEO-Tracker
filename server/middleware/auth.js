@@ -8,9 +8,14 @@ const auth = async (req, res, next) => {
             return res.status(401).json({ success: false, message: " Not authorized, no token" })
         }
         const token = authHeader.split(" ")[1];
-        const decoded = jwt.verify(token, process.env.JWY_SECRET)
+        const jwtSecret = process.env.JWT_SECRET;
+        if (!jwtSecret) {
+            throw new Error("JWT_SECRET is not configured");
+        }
 
-        req.userId = decoded.userId;
+        const decoded = jwt.verify(token, jwtSecret)
+
+        req.userId = decoded.id;
         next()
     } catch (error) {
         console.error("Auth middleware error: ", error.message);

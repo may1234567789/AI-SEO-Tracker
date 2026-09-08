@@ -1,6 +1,6 @@
 import express from "express";
-import auth from "../middleware/auth";
-import { addKeyword, deleteKeyword, getKeyword, getKeywords, refreshKeyword } from "../controllers/rankController";
+import auth from "../middleware/auth.js";
+import { addKeyword, deleteKeyword, getKeyword, getKeywords, refreshKeyword } from "../controllers/rankController.js";
 
 const rankRouter = express.Router();
 

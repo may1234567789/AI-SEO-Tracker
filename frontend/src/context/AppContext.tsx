@@ -59,6 +59,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
             localStorage.removeItem("token");
             setToken(null)
             setUser(null)
+        } finally {
+            setLoading(false)
         }
     }
 
