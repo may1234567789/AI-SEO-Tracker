@@ -15,7 +15,7 @@ export async function rankTracker(keyword, targetDomain) {
         page.setDefaultTimeout(45000); // Set default timeout to 45 seconds
 
         // 2. Initial Google Visit and Consent Handling
-        await page.goto("https://www.google.com", { waitUntil: "networkidle" });
+        await page.goto("https://www.google.com", { waitUntil: "domcontentloaded", timeout: 45000 });
         try {
             const btn = await page.$('button[id="L2AGLb"],form[action*="consent"] button');
             if (btn) {
@@ -30,7 +30,7 @@ export async function rankTracker(keyword, targetDomain) {
 
         // 3. Perform the Google Search through 5 pages
         for (let gpage = 0; gpage < 5; gpage++) {
-            await page.goto(`https://www.google.com/search?q=${encodeURIComponent(keyword)}&start=${gpage * 10}&num=10&hl=en&gl=us`, { waitUntil: "networkidle" });
+            await page.goto(`https://www.google.com/search?q=${encodeURIComponent(keyword)}&start=${gpage * 10}&num=10&hl=en&gl=us`, { waitUntil: "domcontentloaded", timeout: 45000 });
 
             //4. Extract the search results from the page upto 3 times if the results are not found
             let pageResults = [];
@@ -67,10 +67,10 @@ export async function rankTracker(keyword, targetDomain) {
                         return { url: a.href, domain: new URL(a.href).hostname.replace("www.", ""), title: h3.innerText, snippet: s }
                     }).filter(Boolean));
                     if (pageResults.length > 0) break;
-                    await page.reload({ waitUntil: "networkidle" });
+                    await page.reload({ waitUntil: "domcontentloaded", timeout: 45000 });
                 } catch (error) {
                     if (retry === 2) break;
-                    await page.reload({ waitUntil: "networkidle" });
+                    await page.reload({ waitUntil: "domcontentloaded", timeout: 45000 });
                 }
             }
             if (pageResults.length === 0) break;

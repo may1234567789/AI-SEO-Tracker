@@ -56,7 +56,7 @@ export const getKeywords = async (req, res) => {
 //get a single keyword for a user
 export const getKeyword = async (req, res) => {
     try {
-        const tracking = await KeywordTracking.find({ _id: req.params.id, userId: req.userId }).sort({ createdAt: -1 });
+        const tracking = await KeywordTracking.findOne({ _id: req.params.id, userId: req.userId });
         if (!tracking) return res.status(404).json({ success: false, message: "Keyword not found" });
         res.status(200).json({ success: true, tracking });
     } catch (e) {

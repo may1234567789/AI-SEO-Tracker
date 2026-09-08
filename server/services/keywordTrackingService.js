@@ -1,3 +1,5 @@
+import { rankTracker } from "./rankTrackerServices.js";
+
 export async function keywordTracking(tracking) {
     try {
         let result;
