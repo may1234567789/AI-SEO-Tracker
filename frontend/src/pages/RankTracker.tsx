@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import { Target, Plus, RefreshCw, Trash2, TrendingUp, TrendingDown, Minus, ExternalLink, Clock, Loader2, X, Search, Globe, AlertCircle, Eye, EyeOff, Filter, ArrowUpDown } from "lucide-react";
 import { useApp } from "../context/AppContext";
@@ -16,6 +16,7 @@ interface KeywordItem {
     active: boolean;
     lastChecked: string | null;
     status: string;
+    errorMessage: string | null;
     competitors: { position: number; url: string; domain: string; title: string; snippet: string }[];
 }
 
@@ -35,6 +36,11 @@ export default function RankTracker() {
     const [searchQuery, setSearchQuery] = useState("");
     const [statusFilter, setStatusFilter] = useState("all");
     const [sortBy, setSortBy] = useState("newest");
+    const pollingIntervals = useRef<ReturnType<typeof setInterval>[]>([]);
+
+    useEffect(() => {
+        return () => pollingIntervals.current.forEach(clearInterval);
+    }, []);
 
     const fetchKeywords = async () => {
         try {
@@ -68,16 +74,20 @@ export default function RankTracker() {
                 const id = res.data.tracking._id;
                 const pollInterval = setInterval(async () => {
                     try {
-                        const check = await api.get(`/api/rank/${id}`);
-                        if (check.data.tracking.status !== "checking") {
+                        const check = await api.get('/api/rank/list');
+                        const tracking = check.data.keywords.find((keyword: KeywordItem) => keyword._id === id);
+                        if (!tracking || tracking.status !== "checking") {
                             clearInterval(pollInterval)
-                            setKeywords((prev) => prev.map((k) => (k._id === id ? check.data.tracking : k)))
+                            pollingIntervals.current = pollingIntervals.current.filter((interval) => interval !== pollInterval);
+                            setKeywords((prev) => tracking ? prev.map((k) => (k._id === id ? tracking : k)) : prev.filter((k) => k._id !== id))
                         }
                     } catch (error) {
-                        console.error(error);
                         clearInterval(pollInterval)
+                        pollingIntervals.current = pollingIntervals.current.filter((interval) => interval !== pollInterval);
+                        console.error(error);
                     }
                 }, 3000)
+                pollingIntervals.current.push(pollInterval);
             }
         } catch (err: any) {
             setAddError(err.response?.data?.message || "Failed to add keyword")
@@ -95,18 +105,22 @@ export default function RankTracker() {
             //Poll for completion
             const pollInterval = setInterval(async () => {
                 try {
-                    const check = await api.get(`/api/rank/${id}`);
-                    if (check.data.tracking.status !== "checking") {
+                    const check = await api.get('/api/rank/list');
+                    const tracking = check.data.keywords.find((keyword: KeywordItem) => keyword._id === id);
+                    if (!tracking || tracking.status !== "checking") {
                         clearInterval(pollInterval)
-                        setKeywords((prev) => prev.map((k) => (k._id === id ? check.data.tracking : k)))
+                        pollingIntervals.current = pollingIntervals.current.filter((interval) => interval !== pollInterval);
+                        setKeywords((prev) => tracking ? prev.map((k) => (k._id === id ? tracking : k)) : prev.filter((k) => k._id !== id))
                         setRefreshing(null)
                     }
                 } catch (error) {
-                    console.error(error);
                     clearInterval(pollInterval)
+                    pollingIntervals.current = pollingIntervals.current.filter((interval) => interval !== pollInterval);
                     setRefreshing(null)
+                    console.error(error);
                 }
             }, 3000)
+            pollingIntervals.current.push(pollInterval);
         } catch (error) {
             console.error("Refresh failed: ", error)
             setRefreshing(null)
@@ -296,6 +310,12 @@ export default function RankTracker() {
                                                 <div className="flex items-center gap-1 mt-1 text-xs text-muted-foreground">
                                                     <Clock size={10} />
                                                     Last checked: {new Date(kw.lastChecked).toLocaleString()}
+                                                </div>
+                                            )}
+                                            {kw.status === "failed" && kw.errorMessage && (
+                                                <div className="flex items-center gap-1 mt-1 text-xs text-danger">
+                                                    <AlertCircle size={10} />
+                                                    {kw.errorMessage}
                                                 </div>
                                             )}
                                         </div>

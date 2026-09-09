@@ -2,7 +2,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useParams, Link } from "react-router-dom";
 import { ArrowLeft, Target, Globe, Clock, TrendingUp, TrendingDown, Minus, RefreshCw, AlertCircle, ExternalLink, Trophy, Users, Calendar, Loader2 } from "lucide-react";
-import { dummyWebsiteRanking } from "../assets/assets";
+import { useApp } from "../context/AppContext";
 
 interface RankHistoryEntry {
     date: string;
@@ -39,26 +39,46 @@ interface TrackingData {
 
 export default function RankDetail() {
     const { id } = useParams();
+    const { api } = useApp();
     const [tracking, setTracking] = useState<TrackingData | null>(null);
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
     const [activeTab, setActiveTab] = useState("overview");
+    const [error, setError] = useState("");
     const chartRef = useRef<HTMLCanvasElement>(null);
 
     const fetchTracking = async () => {
-        setTimeout(() => {
-            setTracking(dummyWebsiteRanking);
+        if (!id) {
+            setError("Tracking ID is missing.");
             setLoading(false);
-        }, 1000);
+            return;
+        }
+
+        setLoading(true);
+        setError("");
+        try {
+            const res = await api.get(`/api/rank/${id}`);
+            if (!res.data.success) throw new Error(res.data.message || "Unable to load keyword tracking.");
+            setTracking(res.data.tracking);
+        } catch (err: any) {
+            setTracking(null);
+            setError(err.response?.data?.message || "Unable to load keyword tracking.");
+        } finally {
+            setLoading(false);
+        }
     };
 
     const handleRefresh = async () => {
         if (!tracking) return;
         setRefreshing(true);
-        setTimeout(() => {
-            setTracking(dummyWebsiteRanking);
+        try {
+            const res = await api.post(`/api/rank/${tracking._id}/refresh`);
+            if (res.data.success) setTracking(res.data.tracking);
+        } catch (err: any) {
+            setError(err.response?.data?.message || "Unable to refresh keyword tracking.");
+        } finally {
             setRefreshing(false);
-        }, 1000);
+        }
     };
 
     const drawChart = () => {
@@ -233,6 +253,7 @@ export default function RankDetail() {
                 <div className="text-center glass-strong rounded-2xl p-10">
                     <AlertCircle size={48} className="mx-auto text-danger mb-4" />
                     <h2 className="text-xl font-bold text-foreground mb-2">Tracking Not Found</h2>
+                    <p className="text-sm text-muted-foreground mb-6">{error || "This keyword tracking could not be loaded."}</p>
                     <Link to="/rank-tracker" className="bg-primary px-5 py-2.5 rounded-xl text-sm font-semibold text-primary-foreground mt-4 inline-block" style={{ color: "var(--background)" }}>
                         Back to Rank Tracker
                     </Link>
@@ -444,14 +465,14 @@ export default function RankDetail() {
                                             <div key={i} className="glass rounded-xl p-4 flex items-center gap-4 hover:bg-muted/50 transition-all">
                                                 <div
                                                     className={`w-12 h-12 rounded-xl flex items-center justify-center text-sm font-bold shrink-0 ${entry.position === null
-                                                            ? "bg-muted text-muted-foreground border border-border"
-                                                            : entry.position <= 3
-                                                                ? "bg-emerald-500/15 text-emerald-400 border border-emerald-500/30"
-                                                                : entry.position <= 10
-                                                                    ? "bg-primary/15 text-primary border border-primary/30"
-                                                                    : entry.position <= 20
-                                                                        ? "bg-accent/15 text-accent border border-accent/30"
-                                                                        : "bg-danger/15 text-danger border border-danger/30"
+                                                        ? "bg-muted text-muted-foreground border border-border"
+                                                        : entry.position <= 3
+                                                            ? "bg-emerald-500/15 text-emerald-400 border border-emerald-500/30"
+                                                            : entry.position <= 10
+                                                                ? "bg-primary/15 text-primary border border-primary/30"
+                                                                : entry.position <= 20
+                                                                    ? "bg-accent/15 text-accent border border-accent/30"
+                                                                    : "bg-danger/15 text-danger border border-danger/30"
                                                         }`}
                                                 >
                                                     {entry.position ? `#${entry.position}` : "—"}

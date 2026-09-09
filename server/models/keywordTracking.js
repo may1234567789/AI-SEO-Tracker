@@ -3,6 +3,7 @@ import mongoose from "mongoose";
 const rankHistorySchema = new mongoose.Schema({
     date: { type: Date, default: Date.now, required: true },
     position: { type: Number, required: true, default: null },
+    page: { type: Number, default: null },
     title: { type: String, default: null },
     snippet: { type: String, default: null },
 }, { _id: false });
@@ -21,6 +22,7 @@ const keywordTrackingSchema = new mongoose.Schema({
     url: { type: String, required: true, trim: true },
     domain: { type: String, required: true },
     currentPosition: { type: Number, default: null },
+    currentPage: { type: Number, default: null },
     bestPosition: { type: Number, default: null },
     positionChange: { type: Number, default: null },
     rankHistory: [rankHistorySchema],
@@ -28,6 +30,7 @@ const keywordTrackingSchema = new mongoose.Schema({
     active: { type: Boolean, default: true },
     lastChecked: { type: Date, default: null },
     status: { type: String, enum: ["pending", "checking", "completed", 'failed'], default: "pending" },
+    errorMessage: { type: String, default: null },
 }, { timestamps: true });
 
 keywordTrackingSchema.index({ userId: 1, keyword: 1, url: 1 }, { unique: true });

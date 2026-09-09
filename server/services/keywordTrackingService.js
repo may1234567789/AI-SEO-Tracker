@@ -7,6 +7,7 @@ export async function keywordTracking(tracking) {
         for (let attempt = 0; attempt < 3; attempt++) {
             result = await rankTracker(tracking.keyword, tracking.domain);
             if (result.success && result.data.totalResultsScanned) break;
+            if (result.status === 402) break;
             if (attempt < 2) await new Promise((r) => setTimeout(r, result.success ? 3000 : 5000)); // Wait 2-4 seconds before retrying
         }
         if (result.success) {
@@ -43,10 +44,18 @@ export async function keywordTracking(tracking) {
             if (idx >= 0) tracking.rankHistory[idx] = historyEntry;
         } else {
             tracking.status = "failed";
+            tracking.errorMessage = result.error || "Unable to check this keyword.";
         }
         await tracking.save();
         return result;
     } catch (error) {
+        if (error?.name === "DocumentNotFoundError") {
+            return {
+                success: false,
+                error: "Tracking was deleted before the rank check completed."
+            };
+        }
+
         console.error("Error occurred while tracking keyword:", error);
         tracking.status = "failed";
         await tracking.save().catch(() => { });
