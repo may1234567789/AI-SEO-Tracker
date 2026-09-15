@@ -12,7 +12,7 @@ import RankDetail from "./pages/RankDetail";
 import { useApp } from "./context/AppContext";
 
 export default function App() {
-  const { user, loading } = useApp()
+  const { user } = useApp();
 
   const location = useLocation();
 
