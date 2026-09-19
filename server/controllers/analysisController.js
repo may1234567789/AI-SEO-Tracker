@@ -3,7 +3,7 @@ import { analyzeSeoData } from "../services/geminiServices";
 import { scrapeUrl } from "../services/scraperService";
 
 // Analyze a URL
-export const anslyzeUrl = async (req, res) => {
+export const analyzeUrl = async (req, res) => {
     try {
         const { url } = req.body;
         if (!url) return res.status(400).json({ sucess: false, message: "URL is required" });
